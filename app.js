@@ -60,7 +60,8 @@ app.route("/products")
           total: totalProducts
         });
       } else {
-        res.send(err);
+        res.status(404).send('Not Found');
+        // res.send(err);
       }
     })
 
@@ -78,7 +79,13 @@ app.route("/products")
       //checking all fields are filled
       if ((req.body.title == null || req.body.title.length <= 0) || (req.body.price == null || req.body.price.length <= 0) || (req.body.description == null || req.body.description.length <= 0)) {
         // console.log(req.body.description)
-        return res.send(400, {
+        // return res.send(400, {
+        //   Error: 400,
+        //   Message: "Bad Request",
+        //   Description: "Handling POST request at backend, so you can't miss any of the required field. Or the field cannot be empty."
+        // })
+
+        return res.status(400).send({
           Error: 400,
           Message: "Bad Request",
           Description: "Handling POST request at backend, so you can't miss any of the required field. Or the field cannot be empty."
@@ -97,7 +104,12 @@ app.route("/products")
           console.log(req.body);
           res.send("Successfully added the new product");
         } else {
-          res.send(err);
+          return res.status(502).send({
+            Error: 502,
+            Message: "Bad Gateway",
+            Description: "Couldnot connect to database"
+          })
+          // res.send(err);
         }
       });
     }
@@ -125,7 +137,12 @@ app.route("/products/:productTitle")
                 total: totalProducts
               });
             } else {
-              res.send(err);
+              res.status(502).send({
+                Error: 502,
+                Message: "Bad Gateway",
+                Description: "Couldnot connect to database"
+              })
+              // res.send(err);
             }
           })
           .limit(Number(keyStr[1]))
@@ -153,11 +170,16 @@ app.route("/products/:productTitle")
 
       if (req.body.title == null || req.body.price == null || req.body.description == null) {
         // console.log(req.body.description)
-        return res.send(400, {
+        return res.status(400).send({
           Error: 400,
           Message: "Bad Request",
           Description: "Handling PUT request at backend, so you can't miss any of the required field."
         })
+        // return res.send(400, {
+        //   Error: 400,
+        //   Message: "Bad Request",
+        //   Description: "Handling PUT request at backend, so you can't miss any of the required field."
+        // })
       }
       const update = {
         title: req.body.title,
@@ -181,7 +203,7 @@ app.route("/products/:productTitle")
 
   .delete(
     (req, res) => {
-      console.log("Deleting");
+      console.log("Deleting...");
       console.log(req.body);
       Product.deleteOne({
           title: req.params.productTitle
@@ -192,7 +214,12 @@ app.route("/products/:productTitle")
             res.send("Deleted successfully");
             // console.log(err);
           } else {
-            res.send("Couldnt delete" + err);
+            res.status(502).send({
+              Error: 502,
+              Message: "Bad Gateway",
+              Description: "Couldnot connect to database"
+            })
+            // res.send("Couldnt delete" + err);
           }
         });
     }
@@ -208,9 +235,14 @@ function counter(req, res, next) {
     next();
   } else {
     console.log("Total products reached 5, cant add anymore: \n" + req.body);
-    res.send(429, {
-      error: "Too Many Requests"
-    });
+    res.status(429).send({
+      Error: 429,
+      Message: "Too Many Requests"
+      // Description: "Couldnot connect to database"
+    })
+    // res.send(429, {
+    //   error: "Too Many Requests"
+    // });
     // res.send("Error 429")
   }
 }
